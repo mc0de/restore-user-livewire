@@ -8,20 +8,26 @@
                 @endforeach
             </select>
 
-            @can('user_delete')
-                <button class="btn btn-rose ml-3 disabled:opacity-50 disabled:cursor-not-allowed" type="button" wire:click="confirm('deleteSelected')" wire:loading.attr="disabled" {{ $this->selectedCount ? '' : 'disabled' }}>
-                    {{ __('Delete Selected') }}
+            @can('user_restore')
+                <button wire:click="$toggle('trashed')" @class(['btn disabled:opacity-50 disabled:cursor-not-allowed ml-3', 'btn-info' => $trashed, 'btn-secondary' => !$trashed])>
+                    <i @class(['fa-fw fa-lg', 'fas fa-check-square' => $trashed, 'far fa-square' => !$trashed])></i>
+                    {{ __('Show Deleted') }}
                 </button>
             @endcan
+
+            @if(!$trashed)
+                @can('user_delete')
+                    <button class="btn btn-rose disabled:opacity-50 disabled:cursor-not-allowed" type="button" wire:click="confirm('deleteSelected')" wire:loading.attr="disabled" {{ $this->selectedCount ? '' : 'disabled' }}>
+                        {{ __('Delete Selected') }}
+                    </button>
+                @endcan
+            @endif
 
             @if(file_exists(app_path('Http/Livewire/ExcelExport.php')))
                 <livewire:excel-export model="User" format="csv" />
                 <livewire:excel-export model="User" format="xlsx" />
                 <livewire:excel-export model="User" format="pdf" />
             @endif
-
-
-
 
         </div>
         <div class="w-full sm:w-1/2 sm:text-right">
@@ -124,11 +130,19 @@
                                             {{ trans('global.edit') }}
                                         </a>
                                     @endcan
-                                    @can('user_delete')
-                                        <button class="btn btn-sm btn-rose mr-2" type="button" wire:click="confirm('delete', {{ $user->id }})" wire:loading.attr="disabled">
-                                            {{ trans('global.delete') }}
-                                        </button>
-                                    @endcan
+                                    @if($trashed)
+                                        @can('user_restore')
+                                            <button class="btn btn-sm btn-warning mr-2" type="button" wire:click="confirm('restore', {{ $user->id }})" wire:loading.attr="disabled">
+                                                {{ trans('Restore') }}
+                                            </button>
+                                        @endcan
+                                    @else
+                                        @can('user_delete')
+                                            <button class="btn btn-sm btn-rose mr-2" type="button" wire:click="confirm('delete', {{ $user->id }})" wire:loading.attr="disabled">
+                                                {{ trans('global.delete') }}
+                                            </button>
+                                        @endcan
+                                    @endif
                                 </div>
                             </td>
                         </tr>

@@ -26,9 +26,14 @@ class Index extends Component
 
     public array $paginationOptions;
 
+    public bool $trashed = false;
+
     protected $queryString = [
         'search' => [
             'except' => '',
+        ],
+        'trashed' => [
+            'except' => false,
         ],
         'sortBy' => [
             'except' => 'id',
@@ -73,7 +78,8 @@ class Index extends Component
             's'               => $this->search ?: null,
             'order_column'    => $this->sortBy,
             'order_direction' => $this->sortDirection,
-        ]);
+        ])
+            ->when($this->trashed && auth()->user()->can('user_restore'), fn ($query) => $query->onlyTrashed());
 
         $users = $query->paginate($this->perPage);
 
@@ -94,5 +100,13 @@ class Index extends Component
         abort_if(Gate::denies('user_delete'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $user->delete();
+    }
+
+    public function restore($user_id)
+    {
+        abort_if(Gate::denies('user_restore'), Response::HTTP_FORBIDDEN, '403 Forbidden');
+
+        $user = User::onlyTrashed()->find($user_id);
+        $user->restore();
     }
 }

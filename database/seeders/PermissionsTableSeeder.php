@@ -402,6 +402,10 @@ class PermissionsTableSeeder extends Seeder
                 'id'    => 98,
                 'title' => 'ordercompetence_access',
             ],
+            [
+                'id'    => 99,
+                'title' => 'user_restore',
+            ],
         ];
 
         Permission::insert($permissions);
